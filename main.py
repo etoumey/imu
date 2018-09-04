@@ -3,17 +3,6 @@ import math
 import datetime
 import numpy as np
 
-sensor = mpu6050(0x68)
-calibrate(sensor)
-
-
-
-
-
-
-
-
-
 def calibrate(sensor):
 	n = 1000 #calibration sample size
 	sz = (n,1)
@@ -33,3 +22,7 @@ def calibrate(sensor):
 		xGyr[i] = dataGyro['x']
 		yGyr[i] = dataGyro['y']
 		zGyr[i] = dataGyro['z']
+
+
+sensor = mpu6050(0x68)
+calibrate(sensor)
