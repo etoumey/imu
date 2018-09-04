@@ -4,7 +4,8 @@ import datetime
 import numpy as np
 
 def calibrate(sensor):
-	n = 1000 #calibration sample size
+	print "Calibrating..."
+	n = 2000 #calibration sample size
 	sz = (n,1)
 	xAcc = np.zeros(sz)
 	yAcc = np.zeros(sz)
@@ -22,7 +23,9 @@ def calibrate(sensor):
 		xGyr[i] = dataGyro['x']
 		yGyr[i] = dataGyro['y']
 		zGyr[i] = dataGyro['z']
-
-
+	accOffset = np.sqrt(np.mean(xAcc)**2 + np.mean(yAcc)**2 + np.mean(zAcc)**2)
+	print accOffset	
+	
+	print "Calibration Complete!"
 sensor = mpu6050(0x68)
 calibrate(sensor)
