@@ -14,7 +14,7 @@ def calibrate(sensor):
 	yGyr = np.zeros(sz)
 	zGyr = np.zeros(sz)
 
-	for i in range(0,n-1): #Sample n datapoints to establish baseline
+	for i in range(0,n-1): #Sample 1000 datapoints to establish baseline
 		dataAccel = sensor.get_accel_data()
 		dataGyro = sensor.get_gyro_data()
 		xAcc[i] = dataAccel['x']
@@ -23,13 +23,8 @@ def calibrate(sensor):
 		xGyr[i] = dataGyro['x']
 		yGyr[i] = dataGyro['y']
 		zGyr[i] = dataGyro['z']
-	accOff = np.sqrt(np.mean(xAcc)**2 + np.mean(yAcc)**2 + np.mean(zAcc)**2)
-	xGyrOff = np.mean(xGyr)
-	yGyrOff = np.mean(yGyr)
-	zGyrOff = np.mean(zGyr)
-
-
-	print (accOff, xGyrOff, yGyrOff, zGyrOff)	
+	accOffset = np.sqrt(np.mean(xAcc)**2 + np.mean(yAcc)**2 + np.mean(zAcc)**2)
+	print accOffset	
 	
 	print "Calibration Complete!"
 sensor = mpu6050(0x68)
