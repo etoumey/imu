@@ -5,7 +5,7 @@ import numpy as np
 
 def calibrate(sensor):
 	print "Calibrating..."
-	n = 500 #calibration sample size
+	n = 10000 #calibration sample size
 	sz = (n,1)
 	xAcc = np.zeros(sz)
 	yAcc = np.zeros(sz)
@@ -39,8 +39,10 @@ xAngle = 0
 yAngle = 0
 zAngle = 0
 lastTime = time.time()
+initialTime = lastTime
+outFile = open("outFile.dat", "w")
 
-for i in range(0,10000):
+for i in range(0,100000):
 	dataGyro = sensor.get_gyro_data()
 	currentTime = time.time()
 	dt = currentTime - lastTime
@@ -48,4 +50,6 @@ for i in range(0,10000):
 	yAngle += dt*(dataGyro['y'] - yGyrOff)
 	zAngle += dt*(dataGyro['z'] - zGyrOff)
 	lastTime = currentTime
-	print (xAngle, yAngle, zAngle)
+	outFile.write("%f %f %f %f\n" % (currentTime - initialTime,xAngle, yAngle, zAngle))
+
+outFile.close()
