@@ -1,11 +1,11 @@
 from mpu6050 import mpu6050
 import math 
-import datetime
+import time
 import numpy as np
 
 def calibrate(sensor):
 	print "Calibrating..."
-	n = 2000 #calibration sample size
+	n = 500 #calibration sample size
 	sz = (n,1)
 	xAcc = np.zeros(sz)
 	yAcc = np.zeros(sz)
@@ -27,10 +27,25 @@ def calibrate(sensor):
 	xGyrOff = np.mean(xGyr)
 	yGyrOff = np.mean(yGyr)
 	zGyrOff = np.mean(zGyr)
-
-
-	print (accOff, xGyrOff, yGyrOff, zGyrOff)	
-	
 	print "Calibration Complete!"
+	return(accOff, xGyrOff, yGyrOff, zGyrOff)	
+
 sensor = mpu6050(0x68)
-calibrate(sensor)
+[accOff, xGyrOff, yGyrOff, zGyrOff] = calibrate(sensor)
+print(accOff, xGyrOff, yGyrOff, zGyrOff)
+
+print "Begin rotation"
+xAngle = 0
+yAngle = 0
+zAngle = 0
+lastTime = time.time()
+
+for i in range(0,10000):
+	dataGyro = sensor.get_gyro_data()
+	currentTime = time.time()
+	dt = currentTime - lastTime
+	xAngle += dt*(dataGyro['x'] - xGyrOff)
+	yAngle += dt*(dataGyro['y'] - yGyrOff)
+	zAngle += dt*(dataGyro['z'] - zGyrOff)
+	lastTime = currentTime
+	print (xAngle, yAngle, zAngle)
