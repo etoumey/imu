@@ -56,7 +56,7 @@ sensor = mpu6050(0x68)
 
 
 print "Begin rotation"
-n = 10000 # Number of Samples
+n = 2000 # Number of Samples
 xAngle = 0
 yAngle = 0
 zAngle = 0
