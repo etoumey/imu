@@ -27,20 +27,6 @@ def calibrate(sensor): #Implement Kalman Filter to quickly calibrate sensor
 	yGyrP = .5
 	zGyrP = .5
 
-<<<<<<< HEAD
-	for i in range(0,n-1): #Sample 1000 datapoints to establish baseline
-		dataAccel = sensor.get_accel_data()
-		dataGyro = sensor.get_gyro_data()
-		xAcc[i] = dataAccel['x']
-		yAcc[i] = dataAccel['y']
-		zAcc[i] = dataAccel['z']
-		xGyr[i] = dataGyro['x']
-		yGyr[i] = dataGyro['y']
-		zGyr[i] = dataGyro['z']
-	accOffset = np.sqrt(np.mean(xAcc)**2 + np.mean(yAcc)**2 + np.mean(zAcc)**2)
-	print accOffset	
-	
-=======
 	# Kalman Time
 	for i in range(0,n-1): #Sample n datapoints to establish baseline
 		dataAccel = sensor.get_accel_data()
@@ -57,7 +43,6 @@ def calibrate(sensor): #Implement Kalman Filter to quickly calibrate sensor
                 [xGyrEst, xGyrP] = kalman(xGyrEst, xGyr, xGyrP, gyrR)
                 [yGyrEst, yGyrP] = kalman(yGyrEst, yGyr, yGyrP, gyrR)
                 [zGyrEst, zGyrP] = kalman(zGyrEst, zGyr, zGyrP, gyrR)
->>>>>>> a91f2f782a53fa4b01894aa0d538267f40b1dfe9
 	print "Calibration Complete!"
 	print (xGyrEst, yGyrEst, zGyrEst)
 	return(xAccEst, xGyrEst, yGyrEst, zGyrEst)	
