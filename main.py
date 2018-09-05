@@ -1,19 +1,33 @@
 from mpu6050 import mpu6050
 import math 
-import datetime
+import time
 import numpy as np
 
-def calibrate(sensor):
-	print "Calibrating..."
-	n = 2000 #calibration sample size
-	sz = (n,1)
-	xAcc = np.zeros(sz)
-	yAcc = np.zeros(sz)
-	zAcc = np.zeros(sz)
-	xGyr = np.zeros(sz)
-	yGyr = np.zeros(sz)
-	zGyr = np.zeros(sz)
+def kalman(xEst, x, P, R):
+	K = P/(P+R)
+	xNew = xEst + K*(x - xEst)
+	P = (1-K)*P
+	return xNew, P;
 
+def calibrate(sensor): #Implement Kalman Filter to quickly calibrate sensor
+	print "Calibrating..."
+	n = 1000 #calibration sample size
+	xAccEst = 1.0
+	yAccEst = 1.0
+	zAccEst = 1.0
+	xGyrEst = 0.0
+	yGyrEst = 0.0
+	zGyrEst = 0.0
+	accR = .05
+	gyrR = .05
+	xAccP = .5
+	yAccP = .5
+	zAccP = .5
+	xGyrP = .5
+	yGyrP = .5
+	zGyrP = .5
+
+<<<<<<< HEAD
 	for i in range(0,n-1): #Sample 1000 datapoints to establish baseline
 		dataAccel = sensor.get_accel_data()
 		dataGyro = sensor.get_gyro_data()
@@ -26,6 +40,77 @@ def calibrate(sensor):
 	accOffset = np.sqrt(np.mean(xAcc)**2 + np.mean(yAcc)**2 + np.mean(zAcc)**2)
 	print accOffset	
 	
+=======
+	# Kalman Time
+	for i in range(0,n-1): #Sample n datapoints to establish baseline
+		dataAccel = sensor.get_accel_data()
+		dataGyro = sensor.get_gyro_data()
+		xAcc = dataAccel['x']
+		yAcc = dataAccel['y']
+		zAcc = dataAccel['z']
+		xGyr = dataGyro['x']
+		yGyr = dataGyro['y']
+		zGyr = dataGyro['z']
+		[xAccEst, xAccP] = kalman(xAccEst, xAcc, xAccP, accR)
+                [yAccEst, yAccP] = kalman(yAccEst, yAcc, yAccP, accR)
+                [zAccEst, zAccP] = kalman(zAccEst, zAcc, zAccP, accR)
+                [xGyrEst, xGyrP] = kalman(xGyrEst, xGyr, xGyrP, gyrR)
+                [yGyrEst, yGyrP] = kalman(yGyrEst, yGyr, yGyrP, gyrR)
+                [zGyrEst, zGyrP] = kalman(zGyrEst, zGyr, zGyrP, gyrR)
+>>>>>>> a91f2f782a53fa4b01894aa0d538267f40b1dfe9
 	print "Calibration Complete!"
+	print (xGyrEst, yGyrEst, zGyrEst)
+	return(xAccEst, xGyrEst, yGyrEst, zGyrEst)	
+
+
+
+
+# Main
 sensor = mpu6050(0x68)
-calibrate(sensor)
+[accOff, xGyrOff, yGyrOff, zGyrOff] = calibrate(sensor)
+
+
+print "Begin rotation"
+n = 20000 # Number of Samples
+xAngle = 0
+yAngle = 0
+zAngle = 0
+lastTime = time.time()
+initialTime = lastTime
+outFile = open("outFile.dat", "w")
+
+#Some more Kalman initializations
+xAccEst = 1.0
+yAccEst = 1.0
+zAccEst = 1.0
+xGyrEst = 0.0
+yGyrEst = 0.0
+zGyrEst = 0.0
+accR = .05
+gyrR = .05
+xAccP = .5
+yAccP = .5
+zAccP = .5
+xGyrP = .5
+yGyrP = .5
+zGyrP = .5
+
+
+
+
+for i in range(0,n):
+	dataGyro = sensor.get_gyro_data()
+	currentTime = time.time()
+	dt = currentTime - lastTime
+#	[xGyrEst, xGyrP] = kalman(xGyrEst, dataGyro['x'] - xGyrOff, xGyrP,gyrR)
+#        [yGyrEst, yGyrP] = kalman(yGyrEst, dataGyro['y'] - yGyrOff, yGyrP,gyrR) 
+#        [zGyrEst, zGyrP] = kalman(zGyrEst, dataGyro['z'] - zGyrOff, zGyrP,gyrR) 
+	xGyrEst = dataGyro['x'] - xGyrOff
+	yGyrEst = dataGyro['y'] - yGyrOff
+	zGyrEst = dataGyro['z'] - zGyrOff
+	xAngle += dt*(xGyrEst)
+	yAngle += dt*(yGyrEst)
+	zAngle += dt*(zGyrEst)
+	lastTime = currentTime
+	outFile.write("%f %f %f %f\n" % (currentTime - initialTime,xAngle, yAngle, zAngle))
+outFile.close()
