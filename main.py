@@ -3,6 +3,18 @@ import math
 import time
 import numpy as np
 
+def dcm(t1, t2, t3, C): #Body-three 3-1-2 since it's the only one I could find in my AAE440 hw
+	s1 = math.sin(t1)
+	s2 = math.sin(t2)
+	s3 = math.sin(t3)
+	c1 = math.cos(t1)
+	c2 = math.cos(t2)
+	c3 = math.cos(t3)
+
+	A = [[-s1*s2*s3+c3*c1, -s1*c2, s1*s2*c3+s3*c1],[c1*s2*s3+c3*s1, c1*c2, -c1*s2*c3+s3*s1],[-c2*s3, s2, c2*c3]]
+	return np.matmul(C*A);
+
+
 def kalman(xEst, x, P, R):
 	K = P/(P+R)
 	xNew = xEst + K*(x - xEst)
@@ -81,7 +93,7 @@ yGyrP = .5
 zGyrP = .5
 
 
-
+C = [[1,0,0],[0,1,0],[0,0,1]]
 
 for i in range(0,n):
 	dataGyro = sensor.get_gyro_data()
@@ -93,9 +105,7 @@ for i in range(0,n):
 	xGyrEst = dataGyro['x'] - xGyrOff
 	yGyrEst = dataGyro['y'] - yGyrOff
 	zGyrEst = dataGyro['z'] - zGyrOff
-	xAngle += dt*(xGyrEst)
-	yAngle += dt*(yGyrEst)
-	zAngle += dt*(zGyrEst)
+	C = dcm(dt*(xGyrEst), dt*(yGyrEst), dt*(zGyrEst), C)
 	lastTime = currentTime
 	outFile.write("%f %f %f %f\n" % (currentTime - initialTime,xAngle, yAngle, zAngle))
 outFile.close()
