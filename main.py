@@ -3,6 +3,11 @@ import math
 import time
 import numpy as np
 
+#def euler(t1, t2, t3, e): #Euler parameter update
+
+
+
+
 def dcm(t1, t2, t3, C): #Body-three 3-1-2 since it's the only one I could find in my AAE440 hw
 	s1 = math.sin(t1)
 	s2 = math.sin(t2)
@@ -57,18 +62,19 @@ def calibrate(sensor): #Implement Kalman Filter to quickly calibrate sensor
                 [zGyrEst, zGyrP] = kalman(zGyrEst, zGyr, zGyrP, gyrR)
 	print "Calibration Complete!"
 	print (xGyrEst, yGyrEst, zGyrEst)
-	return(xAccEst, xGyrEst, yGyrEst, zGyrEst)	
+	g = [xGyrEst, yGyrEst, zGyrEst]
+	f = [xAccEst, yAccEst, zAccEst]
+	return f,g;
 
 
 
 
 # Main
 sensor = mpu6050(0x68)
-[accOff, xGyrOff, yGyrOff, zGyrOff] = calibrate(sensor)
-
+[f, g] = calibrate(sensor)
 
 print "Begin rotation"
-n = 2 # Number of Samples
+n = 100 # Number of Samples
 xAngle = 0
 yAngle = 0
 zAngle = 0
@@ -96,17 +102,20 @@ zGyrP = .5
 C = [[1,0,0],[0,1,0],[0,0,1]]
 
 for i in range(0,n):
-	dataGyro = sensor.get_gyro_data()
+
 	currentTime = time.time()
+	xGyrEst = 0
+	yGyrEst = 0
+	zGyrEst = 0	
+	for j in range (0,20):
+		dataGyro = sensor.get_gyro_data()
+		xGyrEst += dataGyro['x'] - g[0]
+		yGyrEst += dataGyro['y'] - g[1]
+		zGyrEst += dataGyro['z'] - g[2]
 	dt = currentTime - lastTime
-#	[xGyrEst, xGyrP] = kalman(xGyrEst, dataGyro['x'] - xGyrOff, xGyrP,gyrR)
-#        [yGyrEst, yGyrP] = kalman(yGyrEst, dataGyro['y'] - yGyrOff, yGyrP,gyrR) 
-#        [zGyrEst, zGyrP] = kalman(zGyrEst, dataGyro['z'] - zGyrOff, zGyrP,gyrR) 
-	xGyrEst = dataGyro['x'] - xGyrOff
-	yGyrEst = dataGyro['y'] - yGyrOff
-	zGyrEst = dataGyro['z'] - zGyrOff
-	C = dcm(dt*(xGyrEst), dt*(yGyrEst), dt*(zGyrEst), C)
+	C = dcm(dt*(xGyrEst/20), dt*(yGyrEst/20), dt*(zGyrEst/20), C)
 	lastTime = currentTime
-#	outFile.write("%f %f\n" % (currentTime - initialTime,C))
+	outFile.write("%f %f %f %f\n" % (currentTime - initialTime, C.item(1), C.item(2), C.item(2)))
+	print C	
 outFile.close()
-print C
+
