@@ -12,7 +12,7 @@ def dcm(t1, t2, t3, C): #Body-three 3-1-2 since it's the only one I could find i
 	c3 = math.cos(t3)
 
 	A = [[-s1*s2*s3+c3*c1, -s1*c2, s1*s2*c3+s3*c1],[c1*s2*s3+c3*s1, c1*c2, -c1*s2*c3+s3*s1],[-c2*s3, s2, c2*c3]]
-	return np.matmul(C*A);
+	return np.matmul(C,A);
 
 
 def kalman(xEst, x, P, R):
@@ -68,7 +68,7 @@ sensor = mpu6050(0x68)
 
 
 print "Begin rotation"
-n = 20000 # Number of Samples
+n = 2 # Number of Samples
 xAngle = 0
 yAngle = 0
 zAngle = 0
@@ -107,5 +107,6 @@ for i in range(0,n):
 	zGyrEst = dataGyro['z'] - zGyrOff
 	C = dcm(dt*(xGyrEst), dt*(yGyrEst), dt*(zGyrEst), C)
 	lastTime = currentTime
-	outFile.write("%f %f %f %f\n" % (currentTime - initialTime,xAngle, yAngle, zAngle))
+#	outFile.write("%f %f\n" % (currentTime - initialTime,C))
 outFile.close()
+print C
